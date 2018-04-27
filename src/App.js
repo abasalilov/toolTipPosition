@@ -49,7 +49,7 @@ class Tooltip extends React.Component {
   }
 
   render() {
-    let message = "sup yo";
+    let message = "hello";
     const { toolTipStyle } = styles;
     return (
       <div style={styles.buttonContainer}>
