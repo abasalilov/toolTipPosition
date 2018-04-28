@@ -1,27 +1,20 @@
 import React, { Component } from "react";
+import ReactDOM from "react-dom";
 import logo from "./logo.svg";
 import { Button } from "./Button";
 import "./App.css";
 
 const styles = {
   container: {
-    border: "solid green",
-    justifyContent: "center",
-    alignItems: "center"
+    display: "flex",
+    textAlign: "center",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "50rem",
+    margin: "2rem auto"
   },
-  toolTipStyle: {
-    color: "red",
-    opacity: "1",
-    zIndex: "6",
-    position: "absolute",
-    border: "solid red",
-    minWidth: "120px",
-    maxWidth: "210px"
-  },
-  buttonContainer: {
-    position: "relative",
-    border: "solid blue",
-    margin: "2rem"
+  buttonWToolTip: {
+    position: "relative"
   }
 };
 
@@ -29,7 +22,10 @@ class Tooltip extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      hover: false
+      hover: false,
+      position: "right",
+      x: 0,
+      y: 0
     };
     this.hoverEngage = this.hoverEngage.bind(this);
   }
@@ -39,24 +35,55 @@ class Tooltip extends React.Component {
   }
 
   componentDidMount() {
-    const w = window,
-      d = document,
-      documentElement = d.documentElement,
-      body = d.getElementsByTagName("body")[0],
-      width = w.innerWidth || documentElement.clientWidth || body.clientWidth,
-      height =
-        w.innerHeight || documentElement.clientHeight || body.clientHeight;
+    const position = ReactDOM.findDOMNode(
+      this.refs["toolTipRef"]
+    ).getBoundingClientRect();
+
+    const { bottom, top, right, left, x, y } = position;
+    const deltaRight = right - x;
+    const deltaBottom = bottom - y;
+    const deltaLeft = left - x;
+    const deltaTop = top - y;
+
+    if (deltaRight > 60) {
+      this.setState({ x: 60, y: 5 });
+    } else if (deltaBottom > 50) {
+      this.setState({ x: 0, y: 50 });
+    } else if (deltaLeft > 60) {
+      this.setState({ x: -60, y: 25 });
+    } else if (deltaTop > 60) {
+      this.setState({ x: 0, y: -5 });
+    }
   }
 
   render() {
     let message = "hello";
-    const { toolTipStyle } = styles;
+    const { toolTipStyle, hide } = styles;
+    const { x, y } = this.state;
+    const positionCSS = {
+      transform: "translate(" + x + "px," + y + "px)",
+      position: "absolute",
+      zIndex: "10"
+    };
+
+    const hideToolTip = {
+      transform: "translate(" + x + "px," + y + "px)",
+      visibility: "hidden",
+      position: "absolute"
+    };
+
     return (
-      <div style={styles.buttonContainer}>
-        {this.state.hover && <div style={toolTipStyle}>{message}</div>}
-        <span onMouseLeave={this.hoverEngage} onMouseEnter={this.hoverEngage}>
+      <div style={styles.buttonWToolTip}>
+        <div
+          onMouseLeave={this.hoverEngage}
+          onMouseEnter={this.hoverEngage}
+          ref="toolTipRef"
+        >
+          <span style={this.state.hover ? positionCSS : hideToolTip}>
+            {message}
+          </span>
           {this.props.children}
-        </span>
+        </div>
       </div>
     );
   }
@@ -64,7 +91,7 @@ class Tooltip extends React.Component {
 
 const ButtonWithToolTip = props => (
   <div>
-    <Tooltip style={styles.toolTipStyle}>
+    <Tooltip>
       <Button {...props} />
     </Tooltip>
   </div>
@@ -72,7 +99,7 @@ const ButtonWithToolTip = props => (
 
 class App extends Component {
   render() {
-    const { container, toolTipStyle } = styles;
+    const { container } = styles;
     return (
       <div className="App">
         <header className="App-header">
