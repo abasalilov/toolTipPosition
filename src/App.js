@@ -13,6 +13,15 @@ const styles = {
     width: "50rem",
     margin: "2rem auto"
   },
+  container1: {
+    display: "flex",
+    float: "right",
+    textAlign: "center",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "50rem",
+    margin: "2rem auto"
+  },
   buttonWToolTip: {
     position: "relative"
   }
@@ -35,24 +44,41 @@ class Tooltip extends React.Component {
   }
 
   componentDidMount() {
+    const w = window,
+      d = document,
+      documentElement = d.documentElement,
+      body = d.getElementsByTagName("body")[0],
+      width = w.innerWidth || documentElement.clientWidth || body.clientWidth,
+      height =
+        w.innerHeight || documentElement.clientHeight || body.clientHeight;
+
+    // console.log("bod", body.clientHeight);
     const position = ReactDOM.findDOMNode(
       this.refs["toolTipRef"]
     ).getBoundingClientRect();
 
     const { bottom, top, right, left, x, y } = position;
-    const deltaRight = right - x;
-    const deltaBottom = bottom - y;
-    const deltaLeft = left - x;
-    const deltaTop = top - y;
+    const deltaRight = width - right;
+    const deltaBottom = top - height;
+    const deltaLeft = height - y;
+    const deltaTop = bottom - y;
+    const isLeft = deltaLeft > 10;
+    console.log("height", height, "y", y);
 
-    if (deltaRight > 60) {
+    console.log("more than", isLeft, y > height - 40);
+    if (deltaRight > 40) {
       this.setState({ x: 60, y: 5 });
-    } else if (deltaBottom > 50) {
+    } else if (deltaBottom < 20) {
       this.setState({ x: 0, y: 50 });
-    } else if (deltaLeft > 60) {
-      this.setState({ x: -60, y: 25 });
-    } else if (deltaTop > 60) {
-      this.setState({ x: 0, y: -5 });
+    } else {
+      this.setState({ x: -15, y: -25 });
+    }
+
+    if (y > 600) {
+      if (y === height || y > height - 40) {
+        console.log("here in left");
+        this.setState({ x: -90, y: 10 });
+      }
     }
   }
 
@@ -91,7 +117,7 @@ class Tooltip extends React.Component {
 
 const ButtonWithToolTip = props => (
   <div>
-    <Tooltip>
+    <Tooltip {...props}>
       <Button {...props} />
     </Tooltip>
   </div>
@@ -99,22 +125,27 @@ const ButtonWithToolTip = props => (
 
 class App extends Component {
   render() {
-    const { container } = styles;
+    const { container, container1 } = styles;
     return (
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">Welcome to React</h1>
         </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
         <div>
           <span>ToolTip Interview Question</span>
-          <div style={container}>
+          <div style={{ float: "left" }}>
             <ButtonWithToolTip label={"button one"} />
+          </div>
+          <div style={{ float: "right" }}>
             <ButtonWithToolTip label={"button two"} />
+          </div>
+          <div style={container}>
             <ButtonWithToolTip label={"button three"} />
+          </div>
+
+          <div style={{ right: 0, bottom: 0, position: "fixed" }}>
+            <ButtonWithToolTip label={"button four"} />
           </div>
         </div>
       </div>
